@@ -1,18 +1,10 @@
-# 2023.11.07  14.00
+# 2023.11.07  16.00
 import dash
 from dash import html, dcc
 import dash_bootstrap_components as dbc
-# set pages_folder="" if not "pages" for default subpages
-# set assets_folder="" if not "assets" for default subpages
-# py dash_plotly_multipage_app.py
 
-import os
-assets_path = os.getcwd() +'/pics'
-app = dash.Dash(__name__, use_pages=True, pages_folder="pl_pages", assets_folder=assets_path,
-external_stylesheets=[dbc.themes.BOOTSTRAP]) #SPACELAB
-#app = Dash(external_stylesheets=[dbc.themes.BOOTSTRAP])
-#server = app.server
-
+app = dash.Dash(__name__, use_pages=True, pages_folder="pl_pages", external_stylesheets=[dbc.themes.BOOTSTRAP])
+server = app.server
 
 sidebar = dbc.Nav(
             [
@@ -46,5 +38,5 @@ app.layout = dbc.Container([
 ], fluid=True)
 
 if __name__ == "__main__":
-    #app.run_server(debug=False)
-    app.run(debug=True, use_reloader=True)
+    app.run_server(debug=False)
+   

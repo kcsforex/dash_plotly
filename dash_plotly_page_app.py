@@ -5,7 +5,7 @@ import plotly.express as px
 import dash_bootstrap_components as dbc
 
 app = dash.Dash(external_stylesheets=[dbc.themes.BOOTSTRAP])
-#server = app.server
+server = app.server
 
 df = px.data.gapminder()
 
@@ -35,5 +35,5 @@ def update_graph(value):
     return fig
 
 if __name__ == "__main__":
-    #app.run_server(debug=False)
-    app.run(debug=True, use_reloader=True)
+    app.run_server(debug=False)
+    #app.run(debug=True, use_reloader=True)

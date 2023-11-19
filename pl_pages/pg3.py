@@ -1,60 +1,138 @@
-# 2023.11.07  14.00
-import pandas as pd
-from plotly.subplots import make_subplots
-import plotly.graph_objects as go
-import requests 
+# 2023.11.14  11.00
+import pandas as pd 
+import pandas_ta as ta
 import dash
 from dash import html, dcc, callback, Output, Input
 import dash_bootstrap_components as dbc
+import plotly
+import plotly.graph_objects as go
+import plotly.express as px
+import os
+from datetime import datetime
 
-dash.register_page(__name__, name='Streaming Crypto Charts')
+from youtube_api import get_channel_stats, get_video_ids, get_video_details
 
-def crypto_candles_df(crypto_item): 
-    url_mexc_klines = f'https://api.mexc.com/api/v3/klines?symbol={crypto_item}&interval=1m&limit=100'
-    resp = requests.get(url_mexc_klines)
-    mexc_data = resp.json()
-    mexc_klines_full_df = pd.DataFrame(mexc_data, columns = ['opendate','open','high','low','close','volume','close_time','quate_asset_volume'])
-    mexc_klines_df = mexc_klines_full_df.drop(['close_time','quate_asset_volume'], axis=1) 
-    mexc_klines_df['opendate'] = pd.to_datetime(mexc_klines_df['opendate'], unit='ms') + pd.Timedelta('01:00:00')
-    mexc_klines_df['opendate'] = mexc_klines_df['opendate'].dt.time.astype(str).str[:-3]
+youtube_channel_stat_df = get_channel_stats()[['channelName','subscribers','views','totalVideos']]
+#youtube_channel_stat_df = youtube_channel_stat_df.sort_values(by=['subscribers'], ascending=False)
 
-    candlestick = go.Candlestick(x=mexc_klines_df['opendate'], open=mexc_klines_df['open'], 
-    high=mexc_klines_df['high'],low=mexc_klines_df['low'],close=mexc_klines_df['close']) #name=crypto_item)
-    return candlestick
+youtube_datafile = './data_files/all_youtube_videos.csv'
+videos_full_df = pd.read_csv(youtube_datafile)
+file_unixmoddate = os.path.getmtime(youtube_datafile) #getctime
+file_moddate = datetime.fromtimestamp(file_unixmoddate)
+  
+dash.register_page(__name__, name='Youtube Data')
 
 layout = dbc.Container([
 
- dbc.Row([
-    html.Div('Streaming Crypto Charts (Updated every 30sec)', className="text-primary text-center fs-4")
-     ]),
-    
-    dbc.Row([ 
-        dcc.Graph(id='crypto_charts', config={'displayModeBar': False}),
-        dcc.Interval(id='refresh-interval', interval=30000, n_intervals=0),
+    dbc.Row([
+        html.Div('TOP 20 HUN YouTube Influencers Stats/Info', className="text-primary text-center fs-4")
     ]),
 
-    ], fluid=True)
+# --------------- 2. row, 1. col ---------------
+    dbc.Row([ 
+
+        dbc.Col([ 
+        # ----- 2/1. container -----
+            dbc.Card([
+                html.H6('Select GroupBy'),
+                dcc.RadioItems( options=[
+                    {"label":" Subscribers", "value":'subscribers'},
+                    {"label":" Total views", "value":'views'},
+                    {"label":" Total videos", "value":'totalVideos'},
+                ], id='youtube-radio1', value='subscribers')],
+            style={'padding':'10px','box-shadow': '5px 5px 5px gray', 'borderRadius':'10px', "height": "120px"}),
+        
+        # ----- 2/2. container -----
+            dbc.Row([
+                dbc.Col([
+                    dbc.Card([
+                        html.H6('Data Source'),
+                        dbc.Label("Youtube data source last updated: " f'{file_moddate}', style = {"color": "green","font-weight":"light",'display':'flex','justifyContent':'center'}),
+                        ], style={'padding':'10px','box-shadow': '5px 5px 5px gray', 'borderRadius':'10px', "height": "190px"})
+                ])
+            ],style={'margin-top':'10px'})
+
+        ], width=2),
+
+# --------------- 2. row, 2. col ---------------
+        dbc.Col( 
+            dbc.Card(  
+                dcc.Graph(id='youtube-fig', figure=px.bar(youtube_channel_stat_df, x='channelName', y='subscribers'), config={'displayModeBar': False}),
+                style={'padding':'10px','box-shadow': '5px 5px 5px gray', 'borderRadius':'10px'}), width=5),
+
+# --------------- 2. row, 3. col ---------------
+        dbc.Col( 
+            dbc.Card( 
+                html.Div( #dbc.Table.from_dataframe(youtube_channel_stat_df, bordered=True, striped=True)
+                id='container-table1', style={  'margin':'10px',"maxHeight": "300px", "overflow": "auto"}), #scroll
+                style= { 'box-shadow': '5px 5px 5px gray', 'borderRadius':'10px',"font-size": "12px"}),  width=5) #overflow=Auto, "maxHeight": "250px"            
+   
+    ], style={'margin-top':'20px'}),
+
+# --------------- 3. row, 1. col ---------------
+    dbc.Row([ 
+
+        dbc.Col([ 
+        # ----- 3/1. container -----    
+            dbc.Card([
+                html.H6('Select Param GroupBy'), 
+                dcc.RadioItems( options=[
+                    {"label":" View Count", "value":'viewCount'},
+                    {"label":" Like Count", "value":'likeCount'},
+                    {"label":" Comment Count", "value":'commentCount'},
+                    {"label":" Video Duration", "value":'durationSecs'}
+                ], id='youtube-radio2', value='viewCount')],
+            style={'padding':'10px','box-shadow': '5px 5px 5px gray', 'borderRadius':'10px', "height": "140px"}),
+        
+        # ----- 3/2. container -----
+            dbc.Row([
+                dbc.Col([             
+                    dbc.Card([
+                        html.H6('Select Youtube Channels'),
+                        dcc.Dropdown(options=videos_full_df['channelTitle'].unique(),  id='youtube-dropdown2', value='UborCraft',  maxHeight=135)],
+                        style={'padding':'10px','box-shadow': '5px 5px 5px gray', 'borderRadius':'10px', "height": "220px"})
+                ])
+            ],style={'margin-top':'10px'})
+
+        ], width=3),
+
+# --------------- 3. row, 2. col ---------------
+
+        dbc.Col( 
+            dbc.Card( 
+                html.Div(id='container-table2', style={  'margin':'10px',"maxHeight": "350px", "overflow": "scroll"}), #scroll
+                style= { 'box-shadow': '5px 5px 5px gray', 'borderRadius':'10px', "font-size": "12px"}),  width=9) #overflow=Auto, "maxHeight": "250px"            
+   
+    ], style={'margin-top':'20px'}),
 
 
-@callback(Output('crypto_charts', 'figure'), Input('refresh-interval', 'n_intervals'))
-def update_graph17(n_intervals):
+], fluid=True)
 
-    MyCryptoNames = [["BTCUSDT","ETHUSDT","BLZUSDT"],["BCHUSDT","FILUSDT","AXSUSDT"],["XRPUSDT","ADAUSDT","SOLUSDT"],["DOGEUSDT","MATICUSDT","AVAXUSDT"]]
-    fig = make_subplots(rows=4, cols=3) 
 
-    for i in range(1,5):
-        for j in range(1,4): 
-                        
-            fig.append_trace(crypto_candles_df(MyCryptoNames[i-1][j-1]), row=i, col=j) 
-            fig.add_annotation(xref="x domain",yref="y domain", text=MyCryptoNames[i-1][j-1], x=0.5, y=1.15, showarrow=False, row=i, col=j)
+@callback(
+    Output('youtube-fig', 'figure'), Output('container-table1', 'children'), 
+    Input('youtube-radio1', 'value'))
+def update_graph(value):
 
-            fig.update_xaxes(rangeslider= {'visible':False}, row=i, col=j)
+    youtube_stat_df = youtube_channel_stat_df.sort_values(by=[value], ascending=False)
+    youtube_stat_df['channelName'] = youtube_stat_df['channelName'].str[:15]
 
-    fig.update_layout(height=900, width=1200, showlegend=False) #title_text="Subplots"
-    fig.update_layout(margin=dict(l=10, r=10, t=30, b=70, pad=0))
-    fig.update_xaxes(nticks=10)
+    youtube_stat_table = dbc.Table.from_dataframe(youtube_stat_df, bordered=True, striped=True)
 
-    #fig.for_each_annotation(lambda a: a.update(text = a.text + ': ' + MyCryptoNames[a.text]))
-    #fig['layout']['xaxis{}'.format(i)]['title']='Label X axis 1'
+    fig_channel_stat = px.bar(youtube_stat_df, x='channelName', y=value)
+    fig_channel_stat.update_layout(margin=dict(l=10, r=10, t=30, b=10, pad=10), height=300, font_color="black", title_font_color="blue")
+    fig_channel_stat.update_layout(title_text=f'Youtube Channel order by {value}', title_x=0.5, xaxis_title=None, font=dict(size=10))
+    return fig_channel_stat, youtube_stat_table
 
-    return fig
+
+@callback(
+    Output('container-table2', 'children'), 
+    Input('youtube-radio2', 'value'), Input('youtube-dropdown2', 'value'))
+def update_graph2(value2r,value2d):
+
+    videos_filter_df = videos_full_df.query(f'channelTitle == "{value2d}"').nlargest(50, value2r)
+    #videos_filter_df = videos_full_df[videos_full_df.channelTitle == value2d].nlargest(50, value2r)
+    return dbc.Table.from_dataframe(videos_filter_df, bordered=True, striped=True)
+
+
+

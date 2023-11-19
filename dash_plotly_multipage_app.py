@@ -1,4 +1,4 @@
-# 2023.11.14 17.00
+# 2023.11.19 11.00
 import dash
 from dash import html, dcc
 import dash_bootstrap_components as dbc
@@ -7,7 +7,7 @@ import dash_bootstrap_components as dbc
 
 app = dash.Dash(__name__, use_pages=True, pages_folder="pl_pages", external_stylesheets=[dbc.themes.BOOTSTRAP]) #SPACELAB
 #app = Dash(external_stylesheets=[dbc.themes.BOOTSTRAP])
-#server = app.server
+server = app.server
 
 
 sidebar = dbc.Nav(
@@ -32,5 +32,5 @@ app.layout = dbc.Container([
 ], fluid=True)
 
 if __name__ == "__main__":
-    #app.run_server(debug=False)
-    app.run(debug=True, use_reloader=True)
+    app.run_server(debug=False)
+    #app.run(debug=True, use_reloader=True)

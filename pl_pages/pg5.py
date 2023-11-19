@@ -23,7 +23,7 @@ y1 = wine_df['quality']
 #print(wine_df.columns)
 
 # ---------------------
-housing_df = pd.read_csv('../KCS_Flask/data_files/housing.csv', nrows=1000)
+housing_df = pd.read_csv('./data_files/housing.csv', nrows=1000)
 #read_csv(..., skiprows=1000000, nrows=999999)
 from sklearn.impute import KNNImputer
 housing_df_temp = housing_df.copy()

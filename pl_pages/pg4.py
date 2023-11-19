@@ -12,12 +12,12 @@ from skimage.filters import gaussian
 
 dash.register_page(__name__, name='Image Face Analysis')
 
-pics_file1 = '../KCS_Flask/assets/test_pic_1.jpg'
-pics_file2 = '../KCS_Flask/assets/test_pic_2.jpg'
-pics_file3 = '../KCS_Flask/assets/test_pic_3.jpg'
-pics_file4 = '../KCS_Flask/assets/test_pic_4.jpg'
-pics_file5 = '../KCS_Flask/assets/test_pic_5.jpg'
-pics_file6 = '../KCS_Flask/assets/test_pic_6.jpg'
+pics_file1 = './assets/test_pic_1.jpg'
+pics_file2 = './assets/test_pic_2.jpg'
+pics_file3 = './assets/test_pic_3.jpg'
+pics_file4 = './assets/test_pic_4.jpg'
+pics_file5 = './assets/test_pic_5.jpg'
+pics_file6 = './assets/test_pic_6.jpg'
 #pics_file = dash.get_asset_url('test_pic_1.jpg')
 
 layout = dbc.Container([

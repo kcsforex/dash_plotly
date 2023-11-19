@@ -1,6 +1,6 @@
 # 2023.11.09  19.00
 from googleapiclient.discovery import build
-import isodate
+#import isodate
 import pandas as pd
 from datetime import datetime, timedelta
 from warnings import simplefilter
@@ -86,9 +86,9 @@ def get_video_details(video_ids):
     
     video_df = pd.DataFrame(video_info)
     video_df = video_df.drop(['video_id'], axis=1)
-    video_df['durationSecs'] = video_df['duration'].apply(lambda x: isodate.parse_duration(x).total_seconds())
+    video_df['durationSecs'] = video_df['duration'] #.apply(lambda x: isodate.parse_duration(x).total_seconds())
     video_df['title'] = video_df['title'].str[:50]
-    video_df['publishedDate'] = video_df['publishedAt'].apply(lambda x: isodate.parse_datetime(x)).dt.tz_localize(None) #NoTimezone: dt.tz_localize(None)
+    video_df['publishedDate'] = video_df['publishedAt'] #.apply(lambda x: isodate.parse_datetime(x)).dt.tz_localize(None) #NoTimezone: dt.tz_localize(None)
     video_df = video_df.drop(['publishedAt', 'duration'], axis=1)
 
     ncols = ['viewCount', 'likeCount', 'commentCount']

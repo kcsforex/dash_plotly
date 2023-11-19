@@ -1,4 +1,4 @@
-# 2023.11.16  17.00
+# 2023.11.19  10.00
 import pandas as pd
 from plotly.subplots import make_subplots
 import plotly.graph_objects as go
@@ -10,9 +10,6 @@ import time
 from dash import html, dcc, callback, Output, Input
 import dash_bootstrap_components as dbc
 from mexc_crypto_api import crypto_candles_df
-
-import seaborn as sns 
-import matplotlib.pyplot as plt
 
 dash.register_page(__name__, name='Crypto Heatmap')
 

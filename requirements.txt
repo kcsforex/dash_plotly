@@ -8,3 +8,4 @@ dash_bootstrap_components
 google-api-python-client
 scikit-image
 scikit-learn
+python-binance

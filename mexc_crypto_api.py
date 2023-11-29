@@ -1,8 +1,14 @@
-# 2023.11.14  18.00
+# 2023.11.29  10.00
 import requests
 import pandas as pd
 import pandas_ta as ta
-from pandas import json_normalize
+
+def act_price(crypto_item):
+    url_act_price = f'https://api.mexc.com//api/v3/ticker/price?symbol={crypto_item}'
+    resp = requests.get(url_act_price)
+    mexc_act_price_data = resp.json()
+    mexc_act_price = pd.to_numeric(mexc_act_price_data['price'], errors='coerce')
+    return mexc_act_price
 
 # ---------- Mexc Candles data ----------
 def crypto_candles_df(crypto_item, int_minute, limit): 
@@ -11,12 +17,17 @@ def crypto_candles_df(crypto_item, int_minute, limit):
     mexc_data = resp.json()
     mexc_klines_full_df = pd.DataFrame(mexc_data, columns = ['opendate','open','high','low','close','volume','close_time','quate_asset_volume'])
     mexc_klines_df = mexc_klines_full_df.drop(['close_time','quate_asset_volume'], axis=1) 
+
+    mexc_cols = ['open','high','low','close','volume']
+    mexc_klines_df[mexc_cols] = mexc_klines_df[mexc_cols].apply(pd.to_numeric, errors='coerce')
+
     mexc_klines_df['opendate'] = pd.to_datetime(mexc_klines_df['opendate'], unit='ms') + pd.Timedelta('01:00:00')
+
     return mexc_klines_df
 
 # ---------- Mexc EMA Candles data ----------
 def crypto_ema_df(crypto_item):   
-    return ta.ema(crypto_candles_df(crypto_item,1,150)['close'].astype(float),  length=50)
+    return ta.ema(crypto_candles_df(crypto_item,1,150)['close'],  length=50)
 
 # ---------- Mexc Spot Info data ----------
 def mexc_allcryptos():

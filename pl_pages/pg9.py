@@ -1,13 +1,25 @@
-# 2023.11.29  10.00
+# 2023.11.29  17.00
 import pandas as pd
 import pandas_ta as ta
 import time
 import dash
+import requests
 from dash import html, dcc, callback, Output, Input
 import dash_bootstrap_components as dbc
 from mexc_crypto_api import crypto_candles_df, act_price
 
 dash.register_page(__name__, name='MEXC Crypto Info')
+
+api_key = '5547949161:AAENmn6Qv5Cq_Jh34Jig_KtVtZzqghQfmS8'
+user_id = '1596236850'
+
+def send_to_telegram(message):
+    apiURL = f'https://api.telegram.org/bot{api_key}/sendMessage'
+    try:
+        response = requests.post(apiURL, json={'chat_id': user_id, 'text': message})
+        print(response.text)
+    except Exception as e:
+        print(e)
 
 MyCryptoNames = ['AVAXUSDT','AXSUSDT','BCHUSDT','BTCUSDT','COMPUSDT','DOGEUSDT','ETHUSDT','FILUSDT','LUNCUSDT','LUNAUSDT','MANAUSDT','MKRUSDT','PEPEUSDT','SOLUSDT','SANDUSDT']
 #'ETCUSDT','APTUSDT','MASKUSDT','MAGICUSDT','OPUSDT','XRPUSDT','BNBUSDT','LTCUSDT']
@@ -20,9 +32,9 @@ layout = dbc.Container([
     
     dbc.Row([ 
         dbc.Card( 
-            html.Div(id='crypto-table', style={  'margin':'15px',"maxHeight": "550px", "overflow": "auto"}),
+            html.Div(id='crypto-table', style={'margin':'15px',"maxHeight": "570px", "overflow": "auto"}),
             style= { 'box-shadow': '5px 5px 5px gray', 'borderRadius':'10px',"font-size": "12px"}), #overflow=Auto           
-        dcc.Interval(id='refresh-interval', interval=30000, n_intervals=0),
+        dcc.Interval(id='refresh-interval', interval=50000, n_intervals=0),
     ]),
 
     ], fluid=True)
@@ -34,7 +46,7 @@ def update_crypto_table(n_intervals):
 
     for crypto in MyCryptoNames:   
 
-        klines_df = crypto_candles_df(crypto,1,100)
+        klines_df = crypto_candles_df(crypto,1,150)
 
         if crypto == 'LUNCUSDT':
             klines_df['open'] = 1000 * klines_df['open']  
@@ -52,7 +64,7 @@ def update_crypto_table(n_intervals):
             klines_df['low']  = klines_df['low'] 
             klines_df['close']= klines_df['close']
 
-        M = 25
+        M = 50
         # ---------- Smoothed H.Ashi ----------
         klines_df['o_ema'] = ta.ema(klines_df['open'],  length=M )
         klines_df['h_ema'] = ta.ema(klines_df['high'],  length=M )
@@ -86,11 +98,11 @@ def update_crypto_table(n_intervals):
 
         if (actual_price < sha_min and (high_0 or high_1) >= sha_min):
             text = 'SELL position!'
-            #send_to_telegram(Crypto + ' sell position! Act.price: '+ str(actual_price))
+            send_to_telegram(crypto + ' sell position! Act.price: '+ str(actual_price))
             #bot.send_message(chat_id=user_id, text=Crypto + ' sell position! Act.price: '+ str(actual_price))
         elif (actual_price > sha_max and (low_0 or low_1) <= sha_max):
             text = 'BUY position!'
-            #send_to_telegram(Crypto+ ' buy position! Act.price: '+ str(actual_price))
+            send_to_telegram(crypto+ ' buy position! Act.price: '+ str(actual_price))
             #bot.send_message(chat_id=user_id, text=Crypto+ ' buy position! Act.price: '+ str(actual_price))
             #order_succeeded = Crypto_Order('SIDE_SELL', 0.1, 'ETHUSDT', 'order_market_buy')
         else:

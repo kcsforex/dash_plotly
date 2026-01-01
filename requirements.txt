@@ -1,10 +1,4 @@
-requests
-pandas
-pandas_ta
 dash
+pandas
 plotly
 gunicorn
-dash_bootstrap_components
-google-api-python-client
-scikit-image
-scikit-learn
